@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        #messages {
+            overflow: hidden;
+            max-height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        #messages::-webkit-scrollbar {
+            display: none;
+        }
+
+        #messages {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .message-card {
+            font-size: 0.875rem;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .placeholder {
+            color: #4B5563;
+            text-align: center;
+            font-size: 0.875rem;
+            margin-top: 20px;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
+            fill: white;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div class="bg-gray-800 rounded-xl shadow-xl p-6 w-96">
+        <h1 class="text-2xl font-extrabold text-center text-white mb-4 flex items-center justify-center">
+            <img src="{{ url_for('static', filename='kafka-icon.svg') }}" alt="Kafka Logo" class="h-8 mr-2">
+            Kafka
+        </h1>
+
+        <div class="mb-4 flex items-center">
+            <input type="text" id="messageInput" placeholder="Nachricht eingeben..." class="flex-grow bg-gray-700 border border-gray-600 rounded-l-lg p-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition duration-300 ease-in-out hover:shadow-md" onkeypress="sendMessageOnEnter(event)">
+            <button id="sendMessageButton" class="bg-blue-600 text-white rounded-r-lg p-4 hover:bg-blue-700 transition duration-300 ease-in-out shadow-md">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        
+        <div id="messages" class="space-y-2">
+            <div class="placeholder" id="placeholder">Noch keine Nachrichten empfangen.</div>
+        </div>
+    </div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+
+            if (message.trim() === '') return;
+
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            }).then(response => {
+                if (response.ok) {
+                    document.getElementById('messageInput').value = '';
+                } else {
+                    console.error('Fehler beim Senden der Nachricht:', response.status);
+                }
+            }).catch(error => {
+                console.error('Netzwerkfehler:', error);
+            });
+        }
+
+        function sendMessageOnEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        document.getElementById('sendMessageButton').addEventListener('click', function() {
+            sendMessage();
+        });
+
+        socket.on('new_message', function(data) {
+            const messagesDiv = document.getElementById('messages');
+            const newMessageCard = document.createElement('div');
+            newMessageCard.className = 'bg-gray-600 message-card rounded-lg shadow-md text-white';
+            newMessageCard.textContent = data.message;
+            messagesDiv.appendChild(newMessageCard);
+
+            const placeholder = document.getElementById('placeholder');
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        });
+    </script>
+
+</body>
+</html>

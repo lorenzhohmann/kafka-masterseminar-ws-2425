@@ -1,0 +1,192 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - kafka-net
+    ports:
+      - "2181:2181"
+    restart: on-failure
+
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  kafka3:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  postgresql:
+    image: postgres:14
+    hostname: postgresql
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: "conduktor-console"
+      POSTGRES_USER: "conduktor"
+      POSTGRES_PASSWORD: "password"
+    networks:
+      - kafka-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conduktor"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  conduktor-console:
+    image: conduktor/conduktor-console:1.28.0
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - conduktor_data:/var/conduktor
+    environment:
+      CDK_DATABASE_URL: "postgresql://conduktor:password@postgresql:5432/conduktor-console"
+      CDK_ORGANIZATION_NAME: "kafka-cluster"
+      CDK_ADMIN_EMAIL: "admin@example.com"
+      CDK_ADMIN_PASSWORD: "admin_password"
+      CDK_CLUSTERS_0_ID: "local-kafka"
+      CDK_CLUSTERS_0_NAME: "Local Kafka Cluster"
+      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      CDK_CLUSTERS_0_COLOR: "#6A57C8"
+      CDK_CLUSTERS_0_ICON: "kafka"
+      CDK_MONITORING_CORTEX-URL: "http://conduktor-monitoring:9009/"
+      CDK_MONITORING_ALERT-MANAGER-URL: "http://conduktor-monitoring:9010/"
+      CDK_MONITORING_CALLBACK-URL: "http://conduktor-console:8080/monitoring/api/"
+      CDK_MONITORING_NOTIFICATIONS-CALLBACK-URL: "http://localhost:8080"
+      CDK_LOG_TIMEZONE: "Europe/Berlin"
+    networks:
+      - kafka-net
+    restart: on-failure
+
+  conduktor-monitoring:
+    image: conduktor/conduktor-console-cortex:1.28.0
+    environment:
+      CDK_CONSOLE-URL: "http://conduktor-console:8080"
+      CDK_LOG_TIMEZONE: "Europe/Berlin"
+    networks:
+      - kafka-net
+    ports:
+      - "9009:9009" # Cortex API
+      - "9010:9010" # Alertmanager API
+      - "9090:9090" # Prometheus API
+    volumes:
+      - conduktor_monitoring_data:/var/conduktor/monitoring
+    restart: on-failure
+
+  conduktor-gateway:
+    image: conduktor/conduktor-gateway:3.0.5
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      GATEWAY_ADVERTISED_HOST: "localhost"
+      GATEWAY_PORT_START: 9099
+      GATEWAY_PORT_COUNT: 3
+    ports:
+      - "9099-9101:9099-9101"
+    networks:
+      - kafka-net
+    restart: on-failure
+
+  kafka-cli:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    entrypoint: /bin/sh -c "sleep 10; tail -f /dev/null"
+    networks:
+      - kafka-net
+    restart: on-failure
+
+networks:
+  kafka-net:
+
+volumes:
+  pg_data: {}
+  conduktor_data: {}
+  conduktor_monitoring_data:
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
