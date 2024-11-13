@@ -1,0 +1,24 @@
+conduktorConsole:
+  image: conduktor/conduktor-console:1.28.0
+conduktorGateway:
+  gatewayPortCount: 3
+  gatewayPortStart: 9099
+  image: conduktor/conduktor-gateway:3.0.5
+conduktorMonitoring:
+  image: conduktor/conduktor-console-cortex:1.28.0
+kafka:
+  image: confluentinc/cp-kafka:latest
+  offsetsTopicReplicationFactor: 3
+  replicas: 3
+  transactionStateLogMinISR: 2
+  transactionStateLogReplicationFactor: 3
+  zookeeperConnect: zookeeper-headless:2181
+postgresql:
+  db: conduktor-console
+  image: postgres:14
+  user: conduktor
+zookeeper:
+  clientPort: 2181
+  image: confluentinc/cp-zookeeper:latest
+  replicas: 1
+  tickTime: 2000

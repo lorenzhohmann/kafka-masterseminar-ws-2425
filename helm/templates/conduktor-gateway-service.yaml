@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: conduktor-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: conduktor-gateway
+  ports:
+  - name: gateway-port1
+    port: {{ .Values.conduktorGateway.gatewayPortStart }}
+    targetPort: {{ .Values.conduktorGateway.gatewayPortStart }}
+  - name: gateway-port2
+    port: {{ add .Values.conduktorGateway.gatewayPortStart 1 }}
+    targetPort: {{ add .Values.conduktorGateway.gatewayPortStart 1 }}
+  - name: gateway-port3
+    port: {{ add .Values.conduktorGateway.gatewayPortStart 2 }}
+    targetPort: {{ add .Values.conduktorGateway.gatewayPortStart 2 }}

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-cli
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-cli
+  template:
+    metadata:
+      labels:
+        app: kafka-cli
+    spec:
+      containers:
+      - name: kafka-cli
+        image: confluentinc/cp-kafka:latest
+        command:
+        - tail
+        args:
+        - -f
+        - /dev/null

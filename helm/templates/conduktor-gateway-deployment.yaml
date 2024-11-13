@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conduktor-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conduktor-gateway
+  template:
+    metadata:
+      labels:
+        app: conduktor-gateway
+    spec:
+      containers:
+      - name: conduktor-gateway
+        image: '{{ .Values.conduktorGateway.image }}'
+        ports:
+        - containerPort: {{ .Values.conduktorGateway.gatewayPortStart }}
+          name: gateway-port1
+        - containerPort: {{ add .Values.conduktorGateway.gatewayPortStart 1 }}
+          name: gateway-port2
+        - containerPort: {{ add .Values.conduktorGateway.gatewayPortStart 2 }}
+          name: gateway-port3
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: kafka-headless:9092
+        - name: GATEWAY_ADVERTISED_HOST
+          value: conduktor-gateway
+        - name: GATEWAY_PORT_START
+          value: '{{ .Values.conduktorGateway.gatewayPortStart | quote }}'
+        - name: GATEWAY_PORT_COUNT
+          value: '{{ .Values.conduktorGateway.gatewayPortCount | quote }}'

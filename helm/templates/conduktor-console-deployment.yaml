@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conduktor-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conduktor-console
+  template:
+    metadata:
+      labels:
+        app: conduktor-console
+    spec:
+      containers:
+      - name: conduktor-console
+        image: '{{ .Values.conduktorConsole.image }}'
+        ports:
+        - containerPort: 8080
+          name: console-port
+        env:
+        - name: CDK_DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: kafka-secrets
+              key: cdk-database-url
+        - name: CDK_ORGANIZATION_NAME
+          value: kafka-cluster
+        - name: CDK_ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: kafka-secrets
+              key: conduktor-admin-email
+        - name: CDK_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-secrets
+              key: conduktor-admin-password
+        - name: POSTGRESQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kafka-secrets
+              key: postgresql-password
+        - name: CDK_CLUSTERS_0_ID
+          value: local-kafka
+        - name: CDK_CLUSTERS_0_NAME
+          value: Local Kafka Cluster
+        - name: CDK_CLUSTERS_0_BOOTSTRAPSERVERS
+          value: kafka-headless:9092
+        - name: CDK_CLUSTERS_0_COLOR
+          value: '#6A57C8'
+        - name: CDK_CLUSTERS_0_ICON
+          value: kafka
+        - name: CDK_MONITORING_CORTEX-URL
+          value: http://conduktor-monitoring:9009/
+        - name: CDK_MONITORING_ALERT-MANAGER-URL
+          value: http://conduktor-monitoring:9010/
+        - name: CDK_MONITORING_CALLBACK-URL
+          value: http://conduktor-console:8080/monitoring/api/
+        - name: CDK_MONITORING_NOTIFICATIONS-CALLBACK-URL
+          value: http://conduktor-console:8080/monitoring/api/
+        - name: CDK_LOG_TIMEZONE
+          value: Europe/Berlin
+        volumeMounts:
+        - name: conduktor-data
+          mountPath: /var/conduktor
+      volumes:
+      - name: conduktor-data
+        emptyDir: {}

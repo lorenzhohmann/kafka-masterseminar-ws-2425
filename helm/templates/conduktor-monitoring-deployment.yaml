@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conduktor-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conduktor-monitoring
+  template:
+    metadata:
+      labels:
+        app: conduktor-monitoring
+    spec:
+      containers:
+      - name: conduktor-monitoring
+        image: '{{ .Values.conduktorMonitoring.image }}'
+        ports:
+        - containerPort: 9009
+          name: cortex-api
+        - containerPort: 9010
+          name: am-api
+        - containerPort: 9090
+          name: prom-api
+        env:
+        - name: CDK_CONSOLE-URL
+          value: http://conduktor-console:8080
+        - name: CDK_LOG_TIMEZONE
+          value: Europe/Berlin
+        volumeMounts:
+        - name: conduktor-monitoring-data
+          mountPath: /var/conduktor/monitoring
+      volumes:
+      - name: conduktor-monitoring-data
+        emptyDir: {}
