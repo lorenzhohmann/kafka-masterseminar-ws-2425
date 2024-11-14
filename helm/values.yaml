@@ -7,7 +7,7 @@ conduktorGateway:
 conduktorMonitoring:
   image: conduktor/conduktor-console-cortex:1.28.0
 kafka:
-  image: confluentinc/cp-kafka:latest
+  image: confluentinc/cp-kafka:7.7.1
   offsetsTopicReplicationFactor: 3
   replicas: 3
   transactionStateLogMinISR: 2
