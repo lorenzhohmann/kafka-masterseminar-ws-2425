@@ -12,15 +12,15 @@ services:
       - "2181:2181"
     restart: on-failure
 
-  kafka1:
+  kafka-1:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka1
+    container_name: kafka-1
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
@@ -37,15 +37,15 @@ services:
       start_period: 10s
     restart: on-failure
 
-  kafka2:
+  kafka-2:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka2
+    container_name: kafka-2
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
@@ -62,15 +62,15 @@ services:
       start_period: 10s
     restart: on-failure
 
-  kafka3:
+  kafka-3:
     image: confluentinc/cp-kafka:latest
-    container_name: kafka3
+    container_name: kafka-3
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
@@ -111,11 +111,11 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
-      kafka1:
+      kafka-1:
         condition: service_healthy
-      kafka2:
+      kafka-2:
         condition: service_healthy
-      kafka3:
+      kafka-3:
         condition: service_healthy
     ports:
       - "8080:8080"
@@ -128,7 +128,7 @@ services:
       CDK_ADMIN_PASSWORD: "admin_password"
       CDK_CLUSTERS_0_ID: "local-kafka"
       CDK_CLUSTERS_0_NAME: "Local Kafka Cluster"
-      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: "kafka-1:9092,kafka-2:9092,kafka-3:9092"
       CDK_CLUSTERS_0_COLOR: "#6A57C8"
       CDK_CLUSTERS_0_ICON: "kafka"
       CDK_MONITORING_CORTEX-URL: "http://conduktor-monitoring:9009/"
@@ -148,9 +148,9 @@ services:
     networks:
       - kafka-net
     ports:
-      - "9009:9009" # Cortex API
-      - "9010:9010" # Alertmanager API
-      - "9090:9090" # Prometheus API
+      - "9009:9009"
+      - "9010:9010"
+      - "9090:9090"
     volumes:
       - conduktor_monitoring_data:/var/conduktor/monitoring
     restart: on-failure
@@ -158,11 +158,11 @@ services:
   conduktor-gateway:
     image: conduktor/conduktor-gateway:3.0.5
     depends_on:
-      - kafka1
-      - kafka2
-      - kafka3
+      - kafka-1
+      - kafka-2
+      - kafka-3
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      KAFKA_BOOTSTRAP_SERVERS: "kafka-1:9092,kafka-2:9092,kafka-3:9092"
       GATEWAY_ADVERTISED_HOST: "localhost"
       GATEWAY_PORT_START: 9099
       GATEWAY_PORT_COUNT: 3
@@ -173,15 +173,18 @@ services:
     restart: on-failure
 
   kafka-cli:
-    image: confluentinc/cp-kafka:latest
+    image: bitnami/kafka:3.9.0
+    container_name: kafka-cli
     depends_on:
-      - kafka1
-      - kafka2
-      - kafka3
-    entrypoint: /bin/sh -c "sleep 10; tail -f /dev/null"
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    entrypoint: /bin/sh -c "while true; do sleep 1000; done"
+    init: true
     networks:
       - kafka-net
-    restart: on-failure
+    restart: unless-stopped
+    tty: true
 
 networks:
   kafka-net:

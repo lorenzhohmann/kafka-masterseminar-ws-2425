@@ -1,0 +1,223 @@
+services:
+  redpanda-1:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.10
+    container_name: redpanda-1
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda-1:9092,external://redpanda-1:19092
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr
+      - internal://redpanda-1:8082,external://localhost:18082
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr
+      - redpanda-1:33145
+      - --advertise-rpc-addr
+      - redpanda-1:33145
+      - --default-log-level=info
+    ports:
+      - '19092:19092'
+      - '18082:18082'
+      - '18081:18081'
+      - '9644:9644'
+    volumes:
+      - redpanda-1:/var/lib/redpanda/data
+    networks:
+      - redpanda-net
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+
+  redpanda-2:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.10
+    container_name: redpanda-2
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --kafka-addr
+      - internal://0.0.0.0:9093,external://0.0.0.0:19093
+      - --advertise-kafka-addr
+      - internal://redpanda-2:9093,external://redpanda-2:19093
+      - --rpc-addr
+      - redpanda-2:33146
+      - --advertise-rpc-addr
+      - redpanda-2:33146
+      - --seeds
+      - redpanda-1:33145
+    ports:
+      - '19093:19093'
+      - '9645:9645'
+    volumes:
+      - redpanda-2:/var/lib/redpanda/data
+    networks:
+      - redpanda-net
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+
+  redpanda-3:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.10
+    container_name: redpanda-3
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --kafka-addr
+      - internal://0.0.0.0:9094,external://0.0.0.0:19094
+      - --advertise-kafka-addr
+      - internal://redpanda-3:9094,external://redpanda-3:19094
+      - --rpc-addr
+      - redpanda-3:33147
+      - --advertise-rpc-addr
+      - redpanda-3:33147
+      - --seeds
+      - redpanda-1:33145
+    ports:
+      - '19094:19094'
+      - '9646:9646'
+    volumes:
+      - redpanda-3:/var/lib/redpanda/data
+    networks:
+      - redpanda-net
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+
+  postgresql:
+    image: postgres:14
+    hostname: postgresql
+    environment:
+      POSTGRES_DB: "conduktor"
+      POSTGRES_USER: "conduktor"
+      POSTGRES_PASSWORD: "password"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - redpanda-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U conduktor"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: on-failure
+
+  conduktor-console:
+    image: conduktor/conduktor-console:1.28.0
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redpanda-1:
+        condition: service_healthy
+      redpanda-2:
+        condition: service_healthy
+      redpanda-3:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - conduktor_data:/var/conduktor
+    environment:
+      CDK_DATABASE_URL: "postgresql://conduktor:password@postgresql:5432/conduktor"
+      CDK_ORGANIZATION_NAME: "redpandacluster"
+      CDK_ADMIN_EMAIL: "admin@example.com"
+      CDK_ADMIN_PASSWORD: "admin_password"
+      CDK_CLUSTERS_0_ID: "redpandacluster"
+      CDK_CLUSTERS_0_NAME: "Redpanda Cluster"
+      CDK_CLUSTERS_0_BOOTSTRAPSERVERS: "redpanda-1:9092,redpanda-2:9093,redpanda-3:9094"
+      CDK_CLUSTERS_0_SCHEMAREGISTRY_URL: "http://redpanda-1:18081"
+      CDK_CLUSTERS_0_COLOR: "#FF0000"
+      CDK_CLUSTERS_0_ICON: "kafka"
+      CDK_MONITORING_CORTEX-URL: "http://conduktor-monitoring:9009/"
+      CDK_MONITORING_ALERT-MANAGER-URL: "http://conduktor-monitoring:9010/"
+      CDK_MONITORING_CALLBACK-URL: "http://conduktor-console:8080/monitoring/api/"
+      CDK_MONITORING_NOTIFICATIONS-CALLBACK-URL: "http://localhost:8080"
+      CDK_LOG_TIMEZONE: "Europe/Berlin"
+    networks:
+      - redpanda-net
+    restart: on-failure
+
+  conduktor-monitoring:
+    image: conduktor/conduktor-console-cortex:1.28.0
+    environment:
+      CDK_CONSOLE-URL: "http://conduktor-console:8080"
+      CDK_LOG_TIMEZONE: "Europe/Berlin"
+    networks:
+      - redpanda-net
+    ports:
+      - "9009:9009"
+      - "9010:9010"
+      - "9090:9090"
+    volumes:
+      - conduktor_monitoring_data:/var/conduktor/monitoring
+    restart: on-failure
+
+  conduktor-gateway:
+    image: conduktor/conduktor-gateway:3.0.5
+    depends_on:
+      - redpanda-1
+      - redpanda-2
+      - redpanda-3
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "redpanda-1:19092,redpanda-2:19093,redpanda-3:19094"
+      GATEWAY_ADVERTISED_HOST: "localhost"
+      GATEWAY_PORT_START: 9099
+      GATEWAY_PORT_COUNT: 3
+    ports:
+      - "9099-9101:9099-9101"
+    networks:
+      - redpanda-net
+    restart: on-failure
+
+  redpanda-cli:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.10
+    container_name: redpanda-cli
+    depends_on:
+      - redpanda-1
+      - redpanda-2
+      - redpanda-3
+    entrypoint: /bin/sh -c "while true; do sleep 1000; done"
+    init: true
+    networks:
+      - redpanda-net
+    restart: unless-stopped
+    tty: true
+
+networks:
+  redpanda-net:
+
+volumes:
+  pg_data: {}
+  conduktor_data: {}
+  conduktor_monitoring_data:
+    driver_opts:
+      type: "tmpfs"
+      device: "tmpfs"
+  redpanda-1: {}
+  redpanda-2: {}
+  redpanda-3: {}
