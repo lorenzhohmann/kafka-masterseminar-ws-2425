@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kafka Log Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+        color: #333;
+      }
+      h1 {
+        background-color: #4caf50;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        margin: 0;
+      }
+      #logs {
+        margin: 20px;
+        padding: 0;
+        list-style: none;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+      .log-entry {
+        background-color: #ffffff;
+        border-radius: 5px;
+        margin: 10px 0;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+      }
+      .log-entry:hover {
+        background-color: #f1f1f1;
+      }
+      .log-header {
+        font-size: 14px;
+        color: #777;
+      }
+      .log-message {
+        font-size: 16px;
+        color: #333;
+      }
+      .log-details {
+        font-size: 14px;
+        margin-top: 10px;
+        color: #555;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Real-time Kafka Logs</h1>
+    <ul id="logs"></ul>
+
+    <script>
+      var socket = io.connect('ws://localhost:5000'); // WebSocket-Verbindung zum Server
+
+      socket.on('new_log', function (data) {
+        // Erstelle eine neue Liste für jedes Log, das empfangen wird
+        var logEntry = document.createElement('li');
+        logEntry.classList.add('log-entry');
+
+        var logMessage = document.createElement('div');
+        logMessage.classList.add('log-message');
+        logMessage.textContent = JSON.stringify(data.log);
+
+        var logDetails = document.createElement('div');
+        logDetails.classList.add('log-details');
+        logDetails.textContent = `Consumer: ${data.consumer_id} | Partition: ${data.partition} | Offset: ${data.offset}`;
+
+        logEntry.appendChild(logMessage);
+        logEntry.appendChild(logDetails);
+
+        // Füge das neue Log zur Liste hinzu
+        document.getElementById('logs').appendChild(logEntry);
+
+        // Scrollen, damit das neueste Log sichtbar ist
+        var logList = document.getElementById('logs');
+        logList.scrollTop = logList.scrollHeight;
+      });
+    </script>
+  </body>
+</html>
