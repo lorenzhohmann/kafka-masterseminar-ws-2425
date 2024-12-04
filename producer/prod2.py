@@ -5,7 +5,7 @@ from kafka import KafkaProducer
 
 # Kafka producer configuration
 producer = KafkaProducer(
-    bootstrap_servers='localhost:9099',
+    bootstrap_servers='10.32.5.177:9099',
     key_serializer=lambda k: k.encode('utf-8'),
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )

@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: conduktor-console
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: conduktor-console
   ports:
-  - name: console-port
-    port: 8080
-    targetPort: 8080
+    - name: console-port
+      port: 8080
+      targetPort: 8080

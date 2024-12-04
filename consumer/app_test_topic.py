@@ -2,7 +2,6 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from kafka import KafkaConsumer
-import json
 import threading
 
 app = Flask(__name__)
@@ -12,22 +11,21 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 consumer = KafkaConsumer(
-    'http_logs',
-    bootstrap_servers='localhost:9099',
-    group_id='log_consumer_group',
-    key_deserializer=lambda k: k.decode('utf-8'),
-    value_deserializer=lambda v: json.loads(v.decode('utf-8')),
+    'test-topic',
+    bootstrap_servers='10.32.5.177:9099',
+    key_deserializer=lambda k: k.decode('utf-8') if k else None,
+    value_deserializer=lambda v: v.decode('utf-8') if v else None,
     auto_offset_reset='earliest'
 )
 
 def consume_logs():
     for message in consumer:
         log_data = {
-            'log': message.value, 
-            'partition': message.partition, 
+            'log': message.value,
+            'partition': message.partition,
             'offset': message.offset
         }
-        
+
         socketio.emit('new_log', log_data, namespace='/')
 
 @app.route('/')

@@ -59,9 +59,10 @@
     <ul id="logs"></ul>
 
     <script>
-      var socket = io.connect('ws://localhost:5000');
+      var socket = io.connect('ws://localhost:5000'); // WebSocket-Verbindung zum Server
 
       socket.on('new_log', function (data) {
+        // Erstelle eine neue Liste für jedes Log, das empfangen wird
         var logEntry = document.createElement('li');
         logEntry.classList.add('log-entry');
 
@@ -71,13 +72,15 @@
 
         var logDetails = document.createElement('div');
         logDetails.classList.add('log-details');
-        logDetails.textContent = `Consumer: ${data.consumer_id} | Partition: ${data.partition} | Offset: ${data.offset}`;
+        logDetails.textContent = `Partition: ${data.partition} | Offset: ${data.offset}`;
 
         logEntry.appendChild(logMessage);
         logEntry.appendChild(logDetails);
 
+        // Füge das neue Log zur Liste hinzu
         document.getElementById('logs').appendChild(logEntry);
 
+        // Scrollen, damit das neueste Log sichtbar ist
         var logList = document.getElementById('logs');
         logList.scrollTop = logList.scrollHeight;
       });

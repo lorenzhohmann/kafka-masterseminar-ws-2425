@@ -5,7 +5,8 @@ from flask_socketio import SocketIO
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode='threading')
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:9099"
+# KAFKA_BOOTSTRAP_SERVERS = "localhost:9099"
+KAFKA_BOOTSTRAP_SERVERS = "10.32.5.177:9099"
 
 producer_conf = {
     'bootstrap.servers': KAFKA_BOOTSTRAP_SERVERS,

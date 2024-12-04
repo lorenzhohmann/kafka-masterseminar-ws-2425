@@ -55,20 +55,19 @@
     </style>
   </head>
   <body>
-    <h1>Real-time Kafka Logs</h1>
+    <h1>Real-time Kafka Logs 'test-topic'</h1>
     <ul id="logs"></ul>
 
     <script>
-      var socket = io.connect('ws://localhost:5000'); // WebSocket-Verbindung zum Server
+      var socket = io.connect('ws://localhost:5000');
 
       socket.on('new_log', function (data) {
-        // Erstelle eine neue Liste für jedes Log, das empfangen wird
         var logEntry = document.createElement('li');
         logEntry.classList.add('log-entry');
 
         var logMessage = document.createElement('div');
         logMessage.classList.add('log-message');
-        logMessage.textContent = JSON.stringify(data.log);
+        logMessage.textContent = data.log;
 
         var logDetails = document.createElement('div');
         logDetails.classList.add('log-details');
