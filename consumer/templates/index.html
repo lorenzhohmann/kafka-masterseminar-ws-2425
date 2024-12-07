@@ -71,7 +71,7 @@
 
         var logDetails = document.createElement('div');
         logDetails.classList.add('log-details');
-        logDetails.textContent = `Partition: ${data.partition} | Offset: ${data.offset}`;
+        logDetails.textContent = `Partition: ${data.partition} | Offset: ${data.offset} | Key: ${data.key}`;
 
         logEntry.appendChild(logMessage);
         logEntry.appendChild(logDetails);

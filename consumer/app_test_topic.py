@@ -12,18 +12,20 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 consumer = KafkaConsumer(
     'test-topic',
-    bootstrap_servers='10.32.5.177:9099',
+    bootstrap_servers='10.32.6.171:9099',
     key_deserializer=lambda k: k.decode('utf-8') if k else None,
     value_deserializer=lambda v: v.decode('utf-8') if v else None,
     auto_offset_reset='earliest'
 )
 
 def consume_logs():
+    print(consumer)
     for message in consumer:
         log_data = {
             'log': message.value,
             'partition': message.partition,
-            'offset': message.offset
+            'offset': message.offset,
+            'key': message.key
         }
 
         socketio.emit('new_log', log_data, namespace='/')

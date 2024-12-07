@@ -11,7 +11,7 @@ consumer_id = sys.argv[1] if len(sys.argv) > 1 else f"consumer_{uuid.uuid4().hex
 
 consumer = KafkaConsumer(
     'http_logs',
-    bootstrap_servers='10.32.5.177:9099',
+    bootstrap_servers='10.32.6.171:9099',
     group_id='log_consumer_group',
     key_deserializer=lambda k: k.decode('utf-8'),
     value_deserializer=lambda v: json.loads(v.decode('utf-8')),

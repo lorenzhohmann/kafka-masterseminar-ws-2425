@@ -4,7 +4,7 @@ import random
 from kafka import KafkaProducer
 
 producer = KafkaProducer(
-    bootstrap_servers='10.32.5.177:9099',
+    bootstrap_servers='10.32.6.171:9099',
     key_serializer=lambda k: k.encode('utf-8'),
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
@@ -24,10 +24,8 @@ def send_sensor_data():
             print(f"Sending sensor data: {data} with key: {key}")
             future = producer.send('sensor_data', key=key, value=data)
             
-            # Get metadata after sending the message
             record_metadata = future.get(timeout=10)
             
-            # Print the partition and offset information
             print(f"Message sent to partition {record_metadata.partition} with offset {record_metadata.offset}")
             print("")
             
