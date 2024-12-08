@@ -3,6 +3,7 @@ Lucas Immanuel Nickel und Lorenz Hohmann<br>
 Masterseminar Wintersemester 2024/2025<br>
 08.12.2024
 </span></center>
+
 **Einführung in Apache Kafka**
 
 Apache Kafka ist eine verteilte Streaming-Plattform für Ereignisse (Event-Streaming), die darauf ausgelegt ist, große Mengen an Echtzeitdaten zu verarbeiten. Sie ermöglicht Publish-Subscribe-Messaging, Speicherung und Verarbeitung von Datenströmen und ist damit essentiell für den Aufbau hochperformanter, latenzarmer Datenpipelines. Neben Kafka selbst gibt es verschiedene zusätzliche Tools und Komponenten — wie etwa Conduktor für Monitoring und Administration sowie CLI-Tools für Befehlszeilenoperationen — die das gesamte Kafka-Ökosystem ergänzen.
