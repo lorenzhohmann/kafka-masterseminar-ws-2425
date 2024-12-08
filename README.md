@@ -12,13 +12,13 @@ Diese Dokumentation stellt drei Hauptbetriebsmodi von Kafka-Clustern vor (ZooKee
 
 ## Kafka-Modi und Architekturen
 
-### ZooKeeper-basierter Modus
+### ZooKeeper
 
 Historisch nutzte Kafka ZooKeeper für die Cluster-Koordination und Metadatenverwaltung. ZooKeeper verwendet das ZAB-Protokoll (ZooKeeper Atomic Broadcast), um Konsistenz und Fehlertoleranz durch Leader-Wahlen sicherzustellen. Die Notwendigkeit zusätzlicher ZooKeeper-Instanzen erhöht jedoch den Ressourcenbedarf und kann die Skalierbarkeit einschränken. Zudem führt die zusätzliche Kommunikation zwischen den Brokern und ZooKeeper zu erhöhter Latenz.
 
 In diesem Setup verwenden wir das Docker-Image `confluentinc/cp-kafka:7.7.1`. Diese Konfiguration wird zwar noch unterstützt, wird aber schrittweise durch modernere Implementierungen ohne ZooKeeper-Abhängigkeit abgelöst.
 
-### KRaft-Modus
+### KRaft
 
 KRaft ist der native Kafka-Modus, der mit Kafka 2.8 eingeführt und ab Kafka 3.x zum Standard wurde. Er entfernt die externe Abhängigkeit von ZooKeeper, indem der Raft-Konsensalgorithmus direkt in Kafka integriert wird. Der Leader-Broker wickelt alle Schreiboperationen ab und repliziert die Änderungen an Follower-Knoten. Im Falle eines Leader-Ausfalls wird automatisch ein neuer Leader gewählt.
 
