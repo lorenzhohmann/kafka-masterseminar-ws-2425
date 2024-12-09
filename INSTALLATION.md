@@ -128,7 +128,7 @@ Dienste werden als LoadBalancer bereitgestellt. In Minikube können Sie mithilfe
 
   Fügen Sie anschließend `LoadBalancerIP conduktor-gateway` zu Ihrer Hosts-Datei hinzu.
 
-  Oder in k9s zum Namespace `:pods kafka` navigieren, den `conduktor-gateway` Pod auswählen und mit `STRG + F` einen Port Forward anlegen.
+  Oder in k9s zum Namespace `:pods kafka` navigieren, den `conduktor-gateway` Pod auswählen und mit `SHIFT + F` einen Port Forward anlegen.
   
 - **Conduktor Console:**  
   `http://LoadBalancerIP:8080` Anmeldedaten: `admin@example.com` / `admin_password`)
@@ -139,7 +139,7 @@ Dienste werden als LoadBalancer bereitgestellt. In Minikube können Sie mithilfe
   kubectl describe services conduktor-console -n kafka
   ```
   
-  Oder in k9s zum Namespace `:pods kafka` navigieren, den `conduktor-console` Pod auswählen und mit `STRG + F` einen Port Forward anlegen.
+  Oder in k9s zum Namespace `:pods kafka` navigieren, den `conduktor-console` Pod auswählen und mit `SHIFT + F` einen Port Forward anlegen.
   
 - **CLI Host:**  
   In k9s zum Namespace `:pods kafka` navigieren, den `kafka-cli` Pod auswählen und mit `s` eine Shell öffnen.
@@ -149,7 +149,7 @@ Dienste werden als LoadBalancer bereitgestellt. In Minikube können Sie mithilfe
 Das folgende Bild zeigt die bereitgestellten Dienste in Kubernetes:
 
 <p align="center">
-  <img src="./assets/Docker.png"/>
+  <img src="./assets/Kubernetes.png"/>
 </p>
 
 ### StatefulSets und Headless Services
