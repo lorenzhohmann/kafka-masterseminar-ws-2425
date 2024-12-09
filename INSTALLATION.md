@@ -1,7 +1,7 @@
 <center><h1>Installation von Apache Kafka</h1><span style="font-size: 12px;">
 Lucas Immanuel Nickel und Lorenz Hohmann<br>
 Masterseminar Wintersemester 2024/2025<br>
-08.12.2024
+09.12.2024
 </span></center>
 
 ## Einführung in Apache Kafka
