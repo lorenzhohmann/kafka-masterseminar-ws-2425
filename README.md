@@ -4,7 +4,7 @@
 ## Setup
 ```bash
 # Kafka CLI Container starten
-docker run –d --add-host=conduktor-gateway:10.32.6.171 --name kafka-cli apache/kafka:latest
+docker run -d --add-host=conduktor-gateway:10.32.6.195 --name kafka-cli apache/kafka:latest
 ```
 
 ```bash
@@ -14,7 +14,7 @@ docker exec --workdir /opt/kafka/bin/ -it kafka-cli sh
 
 ```bash
 # Kafka Umgebungsvariable setzen
-export KAFKA_GW="10.32.6.171:9099"
+export KAFKA_GW="10.32.6.195:9099"
 ```
 
 
