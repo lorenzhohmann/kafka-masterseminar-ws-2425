@@ -4,7 +4,7 @@ import random
 from kafka import KafkaProducer
 
 producer = KafkaProducer(
-    bootstrap_servers='10.32.6.171:9099',
+    bootstrap_servers='10.32.6.195:9099',
     key_serializer=lambda k: k.encode('utf-8'),
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )

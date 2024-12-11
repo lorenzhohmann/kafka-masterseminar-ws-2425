@@ -12,7 +12,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 consumer = KafkaConsumer(
     'test-topic',
-    bootstrap_servers='10.32.6.171:9099',
+    bootstrap_servers='10.32.6.195:9099',
     key_deserializer=lambda k: k.decode('utf-8') if k else None,
     value_deserializer=lambda v: v.decode('utf-8') if v else None,
     auto_offset_reset='earliest'

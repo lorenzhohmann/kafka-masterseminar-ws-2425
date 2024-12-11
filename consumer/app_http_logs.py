@@ -13,7 +13,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 consumer = KafkaConsumer(
     'http_logs',
-    bootstrap_servers='10.32.6.171:9099',
+    bootstrap_servers='10.32.6.195:9099',
     group_id='log_consumer_group',
     key_deserializer=lambda k: k.decode('utf-8'),
     value_deserializer=lambda v: json.loads(v.decode('utf-8')),
