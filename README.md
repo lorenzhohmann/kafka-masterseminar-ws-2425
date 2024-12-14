@@ -1,7 +1,16 @@
 # Kafka Übung 18.12.2024
 
+## Conduktor Web UI (via VPN)
+http://10.32.7.81:8080/
 
-## Setup
+__Login__: \
+admin@example.com \
+admin_password
+
+
+
+## Kafka CLI
+### Setup 
 ```bash
 # Kafka CLI Container starten
 docker run -d --add-host=conduktor-gateway:10.32.6.195 --name kafka-cli apache/kafka:latest
@@ -18,7 +27,7 @@ export KAFKA_GW="10.32.6.195:9099"
 ```
 
 
-## Nachrichten veröffentlichen
+### Nachrichten veröffentlichen
 ```bash
 # Nachrichten veröffentlichen
 ./kafka-console-producer.sh --bootstrap-server $KAFKA_GW --topic test-topic --property "parse.key=true" --property "key.separator=:"
@@ -31,7 +40,7 @@ Key2:Meine erste Nachricht mit Key2
 Key1:Meine zweite Nachricht mit Key1
 ```
 
-## Nachrichten lesen
+### Nachrichten lesen
 ```bash
 # Neue Nachrichten lesen
 ./kafka-console-consumer.sh --bootstrap-server $KAFKA_GW --topic test-topic
@@ -42,7 +51,7 @@ Key1:Meine zweite Nachricht mit Key1
 ./kafka-console-consumer.sh --bootstrap-server $KAFKA_GW --topic test-topic --from-beginning
 ```
 
-## Cleanup
+### Cleanup
 ```bash
 # Kafka CLI Container stoppen und löschen
 docker stop kafka-cli -t 0 && docker rm kafka-cli
