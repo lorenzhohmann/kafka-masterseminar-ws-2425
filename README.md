@@ -13,7 +13,7 @@ admin_password
 ### Setup 
 Kafka CLI Container starten
 ```bash
-docker run -d --add-host=conduktor-gateway:10.32.6.195 --name kafka-cli apache/kafka:latest
+docker run -d --add-host=conduktor-gateway:10.32.6.195 --name kafka-cli apache/kafka:3.8.1
 ```
 
 Kafka CLI aufrufen
